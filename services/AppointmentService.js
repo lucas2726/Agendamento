@@ -1,6 +1,7 @@
 const appointment = require("../models/Appointment")
 const mongoose = require("mongoose")
 const AppointmentFactory = require("../factories/AppointmentFactory")
+const mailer = require("nodemailer")
 
 const Appo = mongoose.model("Appointment", appointment) //Para dizer o nome da collection
 
@@ -42,7 +43,7 @@ class AppointmentService {
             return appointments
         }
     }
-        /*
+    /*
 1-if (showFinished) { return await Appo.find() }: Se showFinished for verdadeiro, o método retornará todas as consultas na coleção Appo.
 
 2-let appos = await Appo.find({ 'finished': false }): Se showFinished for falso, o método buscará todas as consultas na coleção Appo onde o campo finished é falso. Ou seja, ele busca todas as consultas que ainda não foram finalizadas.
@@ -52,49 +53,76 @@ class AppointmentService {
 4-return appointments: Por fim, o método retorna a lista de consultas não finalizadas que têm uma data definida.
 */
 
-    
 
-async GetbyId(id){
-    try {
-        let event = await Appo.findOne({'_id': id})
-        return event
-    } catch(error){
-        console.log(error)
-    }
-}
 
-async Finish(id){
-    try {
-     await Appo.findByIdAndUpdate(id, {finished: true})
-     return true   
-    } catch (error) {
-        console.log(error)
-        return false //È importante dar o return false true para saber se operação foi concluida
-    }
-}
-
-async Search(query){
-    try {
-        let appos = await Appo.find().or([{email: query}, {cpf: query}])
-        return appos
-    } catch (error) {
-        console.log(error)
-        return []
-    }
-}
-
-async sendNotification(){
-    let appos = await this.GetAll(false)
-    appos.forEach(app => {
-        let date = app.start.getTime()
-        let hour = 1000 * 60 * 60
-        let gap = date-Date.now()
-
-        if(gap <= hour){
-           
+    async GetbyId(id) {
+        try {
+            let event = await Appo.findOne({ '_id': id })
+            return event
+        } catch (error) {
+            console.log(error)
         }
-    })
-}
+    }
+
+    async Finish(id) {
+        try {
+            await Appo.findByIdAndUpdate(id, { finished: true })
+            return true
+        } catch (error) {
+            console.log(error)
+            return false //È importante dar o return false true para saber se operação foi concluida
+        }
+    }
+
+    async Search(query) {
+        try {
+            let appos = await Appo.find().or([{ email: query }, { cpf: query }])
+            return appos
+        } catch (error) {
+            console.log(error)
+            return []
+        }
+    }
+
+    async sendNotification() {
+        let appos = await this.GetAll(false)
+
+        let transporter = mailer.createTransport({
+            host: "sandbox.smtp.mailtrap.io",
+            port: 25,
+            auth: {
+                user: "2efde0b36c372f",
+                pass: "af26050b2ab02b"
+            }
+        })  
+
+        appos.forEach(async app => {
+
+            let date = app.start.getTime()
+            let hour = 1000 * 60 * 60 
+            let gap = date-Date.now()
+
+            if (gap <= hour) {
+
+                if (!app.notified) {
+
+                   await Appo.findByIdAndUpdate(app.id, {notified: true}) 
+
+                   transporter.sendMail({
+                        from: "Lucas Bueno <lucas@gmail.com>",
+                        to: app.email,
+                        subject: "Sua consulta vai acontecer em breve",
+                        text: "Sua consulta vai acontecer em uma hora",
+                        html: "simmmmmmmmmmmmmmmmm"
+                    }).then(message => {
+                        console.log(message)
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                }
+            }
+        })
+    }
 
 }
 
