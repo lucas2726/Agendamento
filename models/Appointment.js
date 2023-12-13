@@ -7,7 +7,8 @@ const appointment = new mongoose.Schema({ //Para definir os campos e oq eles vã
     cpf: String,
     date: Date,
     time: String,
-    finished: Boolean
+    finished: Boolean, //Para dizer se já terminou a consulta 
+    notified: Boolean //Para dixer o email já foi enviado
 })
 
 module.exports = appointment

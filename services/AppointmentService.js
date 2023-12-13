@@ -14,7 +14,8 @@ class AppointmentService {
             cpf,
             date,
             time,
-            finished: false
+            finished: false,
+            notified: false
         })
         try {//Sempre que trabalhar com await deve se trabalhar o tryCatch
             await newAppo.save()//Para criar a collection
@@ -40,18 +41,53 @@ class AppointmentService {
             })
             return appointments
         }
-        /*
-        Este é um método assíncrono chamado `GetAll`, que recebe um parâmetro `showFinished`. Este método é provavelmente usado para buscar todos os compromissos (ou "appos") de algum tipo de banco de dados.
-        
-        1. `if (showFinished) { return await Appo.find() }`: Se `showFinished` for verdadeiro, o método retorna todos os compromissos encontrados na coleção `Appo`.
-        
-        2. `let appos = await Appo.find({ 'finished': false })`: Se `showFinished` for falso, o método busca todos os compromissos que ainda não foram finalizados (ou seja, `'finished': false`).
-        
-        3. `appos.forEach(appointment => { if (appointment.date != undefined) { appointments.push(AppointmentFactory.Build(appointment)) } })`: Para cada compromisso não finalizado, se a data do compromisso estiver definida, o compromisso é construído usando `AppointmentFactory.Build(appointment)` e adicionado à lista `appointments`.
-        
-        4. `return appointments`: Finalmente, o método retorna a lista de compromissos não finalizados que têm uma data definida.
-        */
     }
+        /*
+1-if (showFinished) { return await Appo.find() }: Se showFinished for verdadeiro, o método retornará todas as consultas na coleção Appo.
+
+2-let appos = await Appo.find({ 'finished': false }): Se showFinished for falso, o método buscará todas as consultas na coleção Appo onde o campo finished é falso. Ou seja, ele busca todas as consultas que ainda não foram finalizadas.
+
+3-appos.forEach(appointment => { if (appointment.date != undefined) { appointments.push(AppointmentFactory.Build(appointment)) } }): Este é um loop que percorre todas as consultas não finalizadas. Se a consulta tiver uma data definida, ela será construída usando a AppointmentFactory e adicionada à lista de appointments.
+
+4-return appointments: Por fim, o método retorna a lista de consultas não finalizadas que têm uma data definida.
+*/
+
+    
+
+async GetbyId(id){
+    try {
+        let event = await Appo.findOne({'_id': id})
+        return event
+    } catch(error){
+        console.log(error)
+    }
+}
+
+async Finish(id){
+    try {
+     await Appo.findByIdAndUpdate(id, {finished: true})
+     return true   
+    } catch (error) {
+        console.log(error)
+        return false //È importante dar o return false true para saber se operação foi concluida
+    }
+}
+
+async Search(query){
+    try {
+        let appos = await Appo.find().or([{email: query}, {cpf: query}])
+        return appos
+    } catch (error) {
+        console.log(error)
+        return []
+    }
+}
+
+async sendNotification(){
+    let appos = await this.GetAll(false)
+    console.log(appos)
+}
+
 }
 
 module.exports = new AppointmentService()

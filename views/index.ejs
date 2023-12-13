@@ -1,32 +1,38 @@
 </html>
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema</title>
- 
+
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.4/index.global.min.js"></script>
 </head>
+
 <body>
- 
+
     <div id="calendar">
     </div>
-    
+
 </body>
- 
+
 <script>
- 
-    document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'pt-br',
-            events: 'getcalendar'
-            })
-            calendar.render()
-        });
- 
+            events: 'getcalendar', //Para colocar no calendario os agendamentos
+            eventClick: function (info) {
+                window.location.href = '/event/'+info.event.id
+            }//Para acessar a pagina da consulta
+        })
+        calendar.render()
+    })
+
 </script>
+
 </html>

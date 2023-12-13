@@ -45,6 +45,34 @@ app.get("/getcalendar", async (req, res) => {
     res.json(appointments)
 })
 
+app.get("/event/:id", async (req, res) => {
+    let appointment = await AppointmentService.GetbyId(req.params.id)
+    console.log(appointment)
+   res.render("event", {appo: appointment})
+})
+
+app.post("/finish", async (req, res) => {
+    let id = req.body.id
+    let result = await AppointmentService.Finish(id)
+    res.redirect("/")
+})
+
+app.get("/list", async (req, res) => {
+    let appos = await AppointmentService.GetAll(true)
+    res.render("list", {appos})
+})
+
+app.get("/searchresult", async (req, res) => {
+    let appos = await AppointmentService.Search(req.query.search)
+    res.render("list", {appos})
+})
+
+let polltime = 5000
+setInterval(async () => {
+ await AppointmentService.sendNotification()
+
+},polltime)
+
 app.listen(8080, () => {
     console.log("Servidor rodando!")
 })
